@@ -46,6 +46,13 @@ Already terminated threads require a normal restart after installing a reviewed
 artifact. Do not use plugin hot-reload or assume config reload revives them.
 Production stays untouched.
 
+2026-10-06 release review: upstream master was freshly fetched; no newer
+upstream master commits require integration. The owner fork's master-targeted
+PR had no hosted verification because upstream PR CI targets develop. Add a
+read-only clean test/shadowJar/spotlessCheck job for this owner release PR;
+publishing is not part of this job. Exact-head hosted verification and fresh
+substantive review remain required. No merge or installation claimed yet.
+
 Architecture refinement: hook selection respects explicit DisabledPluginHooks
 prefixes, but a present-yet-disabled Staff provider retains the fail-closed
 guard. Provider replacement is looked up freshly; failures warn once until
