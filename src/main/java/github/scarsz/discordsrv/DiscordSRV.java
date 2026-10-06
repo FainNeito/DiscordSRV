@@ -1123,6 +1123,7 @@ public class DiscordSRV extends JavaPlugin {
                 "github.scarsz.discordsrv.hooks.chat.TownyChatHook",
                 "github.scarsz.discordsrv.hooks.chat.VentureChatHook",
                 // vanish plugins
+                "github.scarsz.discordsrv.hooks.vanish.EnthusiaStaffHook",
                 "github.scarsz.discordsrv.hooks.vanish.EssentialsHook",
                 "github.scarsz.discordsrv.hooks.vanish.PhantomAdminHook",
                 "github.scarsz.discordsrv.hooks.vanish.SuperVanishHook",
@@ -1136,6 +1137,11 @@ public class DiscordSRV extends JavaPlugin {
                 "github.scarsz.discordsrv.hooks.world.MultiverseCoreV5Hook"
         }) {
             try {
+                // Staff is the configured vanish owner on Enthusia. Do not link an
+                // unrelated SuperVanish namespace or register its incompatible events.
+                if (github.scarsz.discordsrv.hooks.vanish.EnthusiaStaffHook.replacesSuperVanish(hookClassName, pluginHooks)) {
+                    continue;
+                }
                 Class<?> hookClass = Class.forName(hookClassName);
 
                 PluginHook pluginHook = (PluginHook) hookClass.getDeclaredConstructor().newInstance();
