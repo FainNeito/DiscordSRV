@@ -53,6 +53,21 @@ read-only clean test/shadowJar/spotlessCheck job for this owner release PR;
 publishing is not part of this job. Exact-head hosted verification and fresh
 substantive review remain required. No merge or installation claimed yet.
 
+Review requirement: WHEN the first presence update publishes an online count
+THEN THE SYSTEM SHALL have registered visibility hooks first. Current startup
+starts PresenceUpdater before pluginHooks, so the new adapter cannot protect
+that first count. Move thread startup after all hook registration, preserving
+reload-delay behavior. Add source-order regression evidence; actual first
+Discord count and service/provider acceptance still require SMP Test.
+
+Proof: PresenceStartupOrderTest failed before moving thread startup and passes
+after moving it below the registered vanish/metadata hooks. Complete clean
+test/shadowJar/spotlessCheck passes 13 tests. This is source-order and adapter
+regression evidence, not a simulated Bukkit startup or real Discord first-count
+test. Thread.start establishes publication of the guards to the new worker;
+existing delayed reload startup behavior is retained. Fresh exact-head hosted
+checks/review remain required.
+
 Architecture refinement: hook selection respects explicit DisabledPluginHooks
 prefixes, but a present-yet-disabled Staff provider retains the fail-closed
 guard. Provider replacement is looked up freshly; failures warn once until

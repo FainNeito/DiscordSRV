@@ -930,18 +930,6 @@ public class DiscordSRV extends JavaPlugin {
             return;
         }
 
-        // start presence updater thread
-        if (presenceUpdater != null) {
-            if (presenceUpdater.getState() != Thread.State.NEW) {
-                presenceUpdater.interrupt();
-                presenceUpdater = new PresenceUpdater();
-            }
-            SchedulerUtil.runTaskLater(this, () -> presenceUpdater.start(), 5 * 20);
-        } else {
-            presenceUpdater = new PresenceUpdater();
-            presenceUpdater.start();
-        }
-
         // start nickname updater thread
         if (nicknameUpdater != null) {
             if (nicknameUpdater.getState() != Thread.State.NEW) {
@@ -1226,6 +1214,19 @@ public class DiscordSRV extends JavaPlugin {
                 return true;
             }
         });
+        // start presence updater thread only after all visibility hooks exist;
+        // Thread.start publishes the registered guards to the first count.
+        if (presenceUpdater != null) {
+            if (presenceUpdater.getState() != Thread.State.NEW) {
+                presenceUpdater.interrupt();
+                presenceUpdater = new PresenceUpdater();
+            }
+            SchedulerUtil.runTaskLater(this, () -> presenceUpdater.start(), 5 * 20);
+        } else {
+            presenceUpdater = new PresenceUpdater();
+            presenceUpdater.start();
+        }
+
         if (PluginUtil.pluginHookIsEnabled("PlaceholderAPI")) {
             try {
                 DiscordSRV.info(LangUtil.InternalMessage.PLUGIN_HOOK_ENABLING.toString().replace("{plugin}", "PlaceholderAPI"));
