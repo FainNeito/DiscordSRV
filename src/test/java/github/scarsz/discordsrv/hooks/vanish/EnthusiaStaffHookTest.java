@@ -58,6 +58,13 @@ class EnthusiaStaffHookTest {
         assertTrue(EnthusiaStaffHook.selected(true, Collections.singletonList("SuperVanish")));
     }
 
+    @Test void blankDisableEntriesCannotRemoveThePrivacyGuard() {
+        assertTrue(EnthusiaStaffHook.selected(true, Collections.singletonList("")));
+        assertTrue(EnthusiaStaffHook.selected(true, Collections.singletonList("   ")));
+        assertTrue(EnthusiaStaffHook.selected(true, Collections.singletonList(null)));
+        assertFalse(EnthusiaStaffHook.selected(true, java.util.Arrays.asList("", " EnthusiaStaff ")));
+    }
+
     @Test void vanishedPlayerIsHidden() throws Exception {
         assertTrue(EnthusiaStaffHook.publicHidden(VisibilityApi.class, provider(true, false), UUID.randomUUID()));
     }

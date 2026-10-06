@@ -73,3 +73,16 @@ prefixes, but a present-yet-disabled Staff provider retains the fail-closed
 guard. Provider replacement is looked up freshly; failures warn once until
 successful recovery. Only SuperVanish is bypassed after the guard is registered;
 Essentials and other existing hooks remain unchanged.
+
+Blank hook entries: a blank or whitespace DisabledPluginHooks entry is a prefix
+of every hook name, so it previously disabled the EnthusiaStaff guard. Selection
+now ignores blank entries and trims the rest before prefix matching. Proof:
+`blankDisableEntriesCannotRemoveThePrivacyGuard` failed before the change and
+passes after it; clean test/shadowJar/spotlessCheck passes 14 tests on Java 25.
+Upstream's shared PluginUtil.pluginHookIsEnabled matching is unchanged.
+
+Hosted `build` check: this is upstream's prbranch.yml retarget bot (master ->
+develop), which fails with "Resource not accessible by integration" on this
+owner fork, whose stable PRs intentionally target master. The job is now limited
+to DiscordSRV/DiscordSRV. Because it runs on pull_request_target, the guard only
+applies once it is on master; the existing red run is not a source failure.

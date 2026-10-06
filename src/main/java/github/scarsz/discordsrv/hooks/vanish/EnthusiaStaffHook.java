@@ -66,8 +66,10 @@ public final class EnthusiaStaffHook implements VanishHook {
     }
 
     static boolean selected(boolean present, Collection<String> disabledHooks) {
-        return present && disabledHooks.stream().noneMatch(name ->
-                "enthusiastaff".startsWith(name.toLowerCase(Locale.ROOT)));
+        // A blank entry is a prefix of every name; it must not silently drop the privacy guard.
+        return present && disabledHooks.stream()
+                .filter(name -> name != null && !name.trim().isEmpty())
+                .noneMatch(name -> "enthusiastaff".startsWith(name.trim().toLowerCase(Locale.ROOT)));
     }
 
     @Override
