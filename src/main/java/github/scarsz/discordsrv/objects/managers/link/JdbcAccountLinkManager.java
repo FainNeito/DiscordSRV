@@ -617,6 +617,31 @@ public class JdbcAccountLinkManager extends AbstractAccountLinkManager {
     }
 
     @Override
+    public UUID getUuidForSelfService(String discordId) {
+        ensureOffThread(true);
+        try (PreparedStatement statement = connection.prepareStatement("select uuid from " + accountsTable + " where discord = ?")) {
+            statement.setString(1, discordId);
+            try (ResultSet result = statement.executeQuery()) {
+                return result.next() ? UUID.fromString(result.getString("uuid")) : null;
+            }
+        } catch (SQLException e) { throw new IllegalStateException("Account status unavailable", e); }
+    }
+
+    @Override
+    public boolean unlinkIfMatches(String discordId, UUID expectedUuid) throws java.io.IOException {
+        ensureOffThread(false);
+        try {
+            if (!github.scarsz.discordsrv.account.ConditionalUnlink.jdbc(connection, accountsTable, discordId, expectedUuid)) return false;
+        } catch (SQLException e) {
+            throw new java.io.IOException("Account unlink was not confirmed by storage", e);
+        }
+        synchronized (cache) { cache.remove(expectedUuid); }
+        try { beforeUnlink(expectedUuid, discordId); }
+        finally { afterUnlink(expectedUuid, discordId); }
+        return true;
+    }
+
+    @Override
     public void save() {
         try {
             if (!connection.getAutoCommit()) {

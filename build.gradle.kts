@@ -297,6 +297,8 @@ dependencies {
     // debug hooks
     compileOnly("ch.njol:skript:2.5")
 
+    testImplementation("com.h2database:h2:2.3.232")
+
     // JUnit
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.14.3")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.14.3")

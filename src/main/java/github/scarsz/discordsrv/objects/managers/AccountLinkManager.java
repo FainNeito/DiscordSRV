@@ -151,6 +151,16 @@ public interface AccountLinkManager extends Listener {
     void unlink(UUID uuid);
     void unlink(String discordId);
 
+    /** Strict lookup; storage failures must never be reported as an unlinked account. */
+    default UUID getUuidForSelfService(String discordId) {
+        throw new UnsupportedOperationException("Self-service lookup unsupported by this store");
+    }
+
+    /** Atomically remove only this exact pair. Unsupported external managers fail closed. */
+    default boolean unlinkIfMatches(String discordId, UUID expectedUuid) throws IOException {
+        throw new UnsupportedOperationException("Conditional unlink is unsupported by this account store");
+    }
+
     void save() throws IOException;
 
 }
