@@ -617,6 +617,17 @@ public class JdbcAccountLinkManager extends AbstractAccountLinkManager {
     }
 
     @Override
+    public String getDiscordIdForSelfService(UUID uuid) {
+        ensureOffThread(true);
+        try (PreparedStatement statement = connection.prepareStatement("select discord from " + accountsTable + " where uuid = ?")) {
+            statement.setString(1, uuid.toString());
+            try (ResultSet result = statement.executeQuery()) {
+                return result.next() ? result.getString("discord") : null;
+            }
+        } catch (SQLException e) { throw new IllegalStateException("Account status unavailable", e); }
+    }
+
+    @Override
     public UUID getUuidForSelfService(String discordId) {
         ensureOffThread(true);
         try (PreparedStatement statement = connection.prepareStatement("select uuid from " + accountsTable + " where discord = ?")) {

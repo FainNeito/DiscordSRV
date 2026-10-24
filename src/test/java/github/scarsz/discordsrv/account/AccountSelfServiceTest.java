@@ -30,7 +30,7 @@ class AccountSelfServiceTest {
         public Clock withZone(ZoneId z) { return this; }
         public Instant instant() { return Instant.ofEpochMilli(now); }
     }
-    static class Store implements AccountSelfService.Store {
+    static class Store implements AccountSelfService.Store<UUID> {
         Map<String, UUID> links = new HashMap<>(); int writes;
         public UUID current(String actor) { return links.get(actor); }
         public boolean remove(String actor, UUID expected) {
@@ -39,7 +39,7 @@ class AccountSelfServiceTest {
         }
     }
     final Store store = new Store(); final Time time = new Time();
-    final AccountSelfService service = new AccountSelfService(store, time);
+    final AccountSelfService<UUID> service = new AccountSelfService<>(store, time);
     final UUID old = UUID.randomUUID();
     String offer() { store.links.put("owner", old); return service.offer("owner", old); }
     @Test void confirmsOwnPairOnceAndPreservesOthers() {
@@ -72,12 +72,27 @@ class AccountSelfServiceTest {
         assertEquals(0, store.writes);
     }
     @Test void failureIsNotSuccessAndCannotReplay() {
-        AccountSelfService broken = new AccountSelfService(new AccountSelfService.Store() {
+        AccountSelfService<UUID> broken = new AccountSelfService<>(new AccountSelfService.Store<UUID>() {
             public UUID current(String actor) { return old; }
             public boolean remove(String actor, UUID expected) throws Exception { throw new Exception("offline"); }
         }, time);
         String token = broken.offer("owner", old);
         assertEquals(AccountSelfService.Result.FAILED, broken.confirm("owner", token));
         assertEquals(AccountSelfService.Result.EXPIRED, broken.confirm("owner", token));
+    }
+    @Test void minecraftShortcutBindsPlayerAndOriginalDiscordPair() {
+        java.util.Map<String,String> links = new java.util.HashMap<>();
+        links.put("player-uuid", "discord-old");
+        AccountSelfService<String> minecraft = new AccountSelfService<>(new AccountSelfService.Store<String>() {
+            public String current(String actor) { return links.get(actor); }
+            public boolean remove(String actor,String expected) { return links.remove(actor,expected); }
+        },time);
+        String token = minecraft.offer("player-uuid", minecraft.current("player-uuid"));
+        assertEquals(AccountSelfService.Result.DENIED,minecraft.confirm("other-player",token));
+        links.put("player-uuid", "discord-new");
+        assertEquals(AccountSelfService.Result.STALE,minecraft.confirm("player-uuid",token));
+        assertEquals("discord-new",links.get("player-uuid"));
+        String fresh = minecraft.offer("player-uuid", minecraft.current("player-uuid"));
+        assertEquals(AccountSelfService.Result.UNLINKED,minecraft.confirm("player-uuid",fresh));
     }
 }

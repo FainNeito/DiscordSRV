@@ -6,4 +6,4 @@
 - WHEN Discord direct messages are enabled, THE SYSTEM SHALL accept exact account and unlink help keywords without interpreting arbitrary chat as commands.
 - THE SYSTEM SHALL preserve administrator commands, Staff vanish integration, existing link codes and global relink policy.
 
-No production deployment, restart, shared TEST use, or actual account mutation is authorized by implementation. Discord command visibility still requires an explicit integration allow at deployment. Existing /discord unlink remains available; short /unlink alias decision pending.
+No production deployment, restart, shared TEST use, or actual account mutation is authorized by implementation. Discord command visibility still requires an explicit integration allow at deployment. Existing /discord unlink remains available. A self-only /unlink shortcut uses click-to-confirm with the same expiry, actor binding and exact pair guard; it accepts no target account.

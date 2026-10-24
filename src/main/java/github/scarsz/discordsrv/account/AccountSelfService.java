@@ -26,28 +26,28 @@ import java.util.Map;
 import java.util.UUID;
 
 /** Framework-independent confirmation policy. No actor or Minecraft target comes from client input. */
-public final class AccountSelfService {
-    public interface Store {
-        UUID current(String actor);
-        boolean remove(String actor, UUID expected) throws Exception;
+public final class AccountSelfService<T> {
+    public interface Store<T> {
+        T current(String actor);
+        boolean remove(String actor, T expected) throws Exception;
     }
     public enum Result { UNLINKED, STALE, EXPIRED, DENIED, FAILED }
     private static final long TTL = 120_000;
-    private final Store store;
+    private final Store<T> store;
     private final Clock clock;
-    private final Map<String, Pending> pending = new HashMap<>();
-    public AccountSelfService(Store store, Clock clock) { this.store = store; this.clock = clock; }
-    public UUID current(String actor) { return store.current(actor); }
-    public synchronized String offer(String actor, UUID expected) {
+    private final Map<String, Pending<T>> pending = new HashMap<>();
+    public AccountSelfService(Store<T> store, Clock clock) { this.store = store; this.clock = clock; }
+    public T current(String actor) { return store.current(actor); }
+    public synchronized String offer(String actor, T expected) {
         long now = clock.millis();
         pending.values().removeIf(p -> p.deadline <= now || p.actor.equals(actor));
         if (pending.size() >= 4096) throw new IllegalStateException("Account confirmation capacity reached");
         String token = UUID.randomUUID().toString();
-        pending.put(token, new Pending(actor, expected, now + TTL));
+        pending.put(token, new Pending<>(actor, expected, now + TTL));
         return token;
     }
     public synchronized Result confirm(String actor, String token) {
-        Pending p = pending.get(token);
+        Pending<T> p = pending.get(token);
         if (p == null) return Result.EXPIRED;
         if (!p.actor.equals(actor)) return Result.DENIED;
         pending.remove(token);
@@ -56,14 +56,14 @@ public final class AccountSelfService {
         catch (Exception e) { return Result.FAILED; }
     }
     public synchronized void cancel(String actor, String token) {
-        Pending p = pending.get(token);
+        Pending<T> p = pending.get(token);
         if (p != null && p.actor.equals(actor)) pending.remove(token);
     }
-    private static final class Pending {
+    private static final class Pending<T> {
         final String actor;
-        final UUID expected;
+        final T expected;
         final long deadline;
-        Pending(String actor, UUID expected, long deadline) {
+        Pending(String actor, T expected, long deadline) {
             this.actor = actor; this.expected = expected; this.deadline = deadline;
         }
     }

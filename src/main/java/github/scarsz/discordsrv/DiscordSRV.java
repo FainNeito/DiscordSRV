@@ -1086,6 +1086,7 @@ public class DiscordSRV extends JavaPlugin {
             accountLinkManager = new AppendOnlyFileAccountLinkManager();
         }
         Bukkit.getPluginManager().registerEvents(accountLinkManager, this);
+        getCommand("unlink").setExecutor(new github.scarsz.discordsrv.account.AccountUnlinkCommand(this));
 
         // register events
         new PlayerBanListener();

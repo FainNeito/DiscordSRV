@@ -39,10 +39,10 @@ import java.util.UUID;
 
 public final class AccountSelfServiceListener extends ListenerAdapter implements SlashCommandProvider {
     private final DiscordSRV plugin;
-    private final AccountSelfService service;
+    private final AccountSelfService<UUID> service;
     public AccountSelfServiceListener(DiscordSRV plugin) {
         this.plugin = plugin;
-        this.service = new AccountSelfService(new AccountSelfService.Store() {
+        this.service = new AccountSelfService<>(new AccountSelfService.Store<UUID>() {
             public UUID current(String actor) { return plugin.getAccountLinkManager().getUuidForSelfService(actor); }
             public boolean remove(String actor, UUID expected) throws Exception {
                 return plugin.getAccountLinkManager().unlinkIfMatches(actor, expected);

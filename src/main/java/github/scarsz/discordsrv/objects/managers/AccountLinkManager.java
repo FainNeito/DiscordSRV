@@ -151,6 +151,11 @@ public interface AccountLinkManager extends Listener {
     void unlink(UUID uuid);
     void unlink(String discordId);
 
+    /** Strict reverse lookup for the self-only Minecraft shortcut. */
+    default String getDiscordIdForSelfService(UUID uuid) {
+        throw new UnsupportedOperationException("Self-service lookup unsupported by this store");
+    }
+
     /** Strict lookup; storage failures must never be reported as an unlinked account. */
     default UUID getUuidForSelfService(String discordId) {
         throw new UnsupportedOperationException("Self-service lookup unsupported by this store");

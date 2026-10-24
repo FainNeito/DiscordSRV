@@ -192,6 +192,9 @@ public class AppendOnlyFileAccountLinkManager extends AbstractFileAccountLinkMan
     }
 
     @Override
+    public String getDiscordIdForSelfService(UUID uuid) { return getDiscordId(uuid); }
+
+    @Override
     public UUID getUuidForSelfService(String discordId) { return getUuid(discordId); }
 
     @Override
