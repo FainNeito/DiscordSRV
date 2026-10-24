@@ -153,6 +153,7 @@ public class DiscordSRV extends JavaPlugin {
 
     // Managers
     private AccountLinkManager accountLinkManager;
+    private github.scarsz.discordsrv.account.AccountSelfServiceListener accountSelfService;
     @Getter private CommandManager commandManager = new CommandManager();
     @Getter private GroupSynchronizationManager groupSynchronizationManager = new GroupSynchronizationManager();
     @Getter private IncompatibleClientManager incompatibleClientManager = new IncompatibleClientManager();
@@ -880,6 +881,8 @@ public class DiscordSRV extends JavaPlugin {
             DiscordSRV.api.requireCacheFlag(CacheFlag.CLIENT_STATUS);
         }
         try {
+            accountSelfService = new github.scarsz.discordsrv.account.AccountSelfServiceListener(this);
+            api.addSlashCommandProvider(accountSelfService);
             // see ApiManager for our default intents & cache flags
             jda = JDABuilder.create(api.getIntents())
                     // we disable anything that isn't enabled (everything is enabled by default)
@@ -898,6 +901,7 @@ public class DiscordSRV extends JavaPlugin {
                     .addEventListeners(new DiscordChatListener())
                     .addEventListeners(new DiscordConsoleListener())
                     .addEventListeners(new DiscordAccountLinkListener())
+                    .addEventListeners(accountSelfService)
                     .addEventListeners(new DiscordDisconnectListener())
                     .addEventListeners(api)
                     .addEventListeners(groupSynchronizationManager)
@@ -1082,6 +1086,8 @@ public class DiscordSRV extends JavaPlugin {
             accountLinkManager = new AppendOnlyFileAccountLinkManager();
         }
         Bukkit.getPluginManager().registerEvents(accountLinkManager, this);
+        getCommand("unlink").setExecutor(new github.scarsz.discordsrv.account.AccountUnlinkCommand(this));
+        getCommand("unlink").setTabCompleter((sender, command, alias, args) -> java.util.Collections.emptyList());
 
         // register events
         new PlayerBanListener();
@@ -1401,6 +1407,7 @@ public class DiscordSRV extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (accountSelfService != null) api.removeSlashCommandProvider(accountSelfService);
         shuttingDown = true;
 
         final long shutdownStartTime = System.currentTimeMillis();
@@ -2303,5 +2310,8 @@ public class DiscordSRV extends JavaPlugin {
     @SuppressWarnings("LombokGetterMayBeUsed")
     public AccountLinkManager getAccountLinkManager() {
         return this.accountLinkManager;
+    }
+    public github.scarsz.discordsrv.account.AccountSelfServiceListener getAccountSelfService() {
+        return accountSelfService;
     }
 }

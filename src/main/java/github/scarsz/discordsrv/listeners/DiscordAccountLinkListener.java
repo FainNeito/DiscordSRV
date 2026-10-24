@@ -54,6 +54,9 @@ public class DiscordAccountLinkListener extends ListenerAdapter {
         // don't link accounts if config option is disabled
         if (!DiscordSRV.config().getBoolean("MinecraftDiscordAccountLinkedUsePM")) return;
 
+        if (DiscordSRV.getPlugin().getAccountSelfService() != null
+                && DiscordSRV.getPlugin().getAccountSelfService().privateMessage(event)) return;
+
         String reply = DiscordSRV.getPlugin().getAccountLinkManager().process(event.getMessage().getContentRaw(), event.getAuthor().getId());
         if (reply != null) event.getMessage().reply(reply).queue();
     }

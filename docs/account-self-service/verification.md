@@ -1,0 +1,19 @@
+# Verification and delivery boundaries
+
+Base: FainNeito/DiscordSRV canonical maintained fork master 318ced60; upstream vendor DiscordSRV/DiscordSRV remains separate. Existing checkout and Staff privacy integration preserved; isolated feat/account-self-service-20261024 worktree.
+
+Spec: the observed recovery required staff because the original Minecraft account was inaccessible and automatic relinking is disabled. New Discord /account and exact account/unlink DM keywords show private status, review, Confirm unlink/Keep linked, and fresh-code relinking instructions. The human selected the additional /unlink shortcut; it uses the same confirmation policy keyed to the actual Minecraft player UUID. The existing /discord unlink remains unchanged.
+
+Prove: this self-service provider and conditional delete API are absent from base. Tests were added during implementation, not claimed as historical red/green evidence.
+
+Engine and architecture: framework-independent bounded confirmation service; DiscordSRV JDA provider and DM adapter run lookups/deletes asynchronously. Actor comes only from Discord event, never a target option. Confirmations are single-use, actor-bound, two minutes, replaced per actor, capped at4096. Both JDBC and append-only storage compare the exact actor/UUID at deletion. JDBC uses a parameterized conditional DELETE and fails closed on existing foreign transactions; journal writes precede cache removal. Existing lifecycle hooks remain; asynchronous Discord role synchronization may still fail due to existing hierarchy restrictions and is not claimed as verified. Callback exceptions after durable deletion produce an uncertain outcome and ask the player to recheck status. Legacy/external stores fail closed rather than silently implementing unsafe unlink.
+
+Refine: Gradle clean test shadowJar spotlessApply spotlessCheck PASS on JDK25.0.3, 24 tests/0fail/0error/0skip including10 new cases. SQL H2 contract tests cover exact pairing, replacement and other-account preservation, replay, missing table and foreign transactions. File journal test covers disk failure retaining memory, stale/no write, and successful actual temp-file persistence. Confirmation tests cover wrong actor, expiry, replay, cancel, reissue and failure. Existing Staff visibility tests retained. H2 is test-only. Runtime still targets Java8 bytecode; actual adapter compiles against bundled JDA4/DiscordSRV1.30.5 build APIs. No fabricated native MariaDB or live-client proof.
+
+Tooling: no project-local EARS validator or state helpers exist; this requirements/evidence record is the scoped substitute. Preview is simulated and does not contact Discord or change accounts.
+
+Deployment acceptance still required: reviewed merged source and canonical network dependency pin; production JAR provenance/hash; enable /account in intended Discord channel without broadening other commands; two controlled accounts exercise private response, DM fallback, stale/replay/cancel, actual JDBC unlink and linked-access/require-link effects. No TEST/prod upload, restart, reload, registration or account mutation occurred during development. Existing global relink policy/admin commands/Staff integration remain unchanged.
+
+In-game shortcut uses discordsrv.unlink.self (default true), never accepts another target, and sends confirmation/notice on the player scheduler. Deployment must check command conflicts, command whitelist and actual clickable chat; namespaced discordsrv:unlink remains available. No ranks changed.
+
+Final review: confirmation click actions use /discordsrv:unlink explicitly so other plugins cannot intercept the action; tab completion returns no player names. Interactive hosted preview verified at390x844 through cancel, successful confirmation and relinking guidance. Site requires the owner ChatGPT login; no real Discord operation occurs.

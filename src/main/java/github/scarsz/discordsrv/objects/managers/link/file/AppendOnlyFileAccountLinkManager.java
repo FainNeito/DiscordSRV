@@ -192,6 +192,21 @@ public class AppendOnlyFileAccountLinkManager extends AbstractFileAccountLinkMan
     }
 
     @Override
+    public String getDiscordIdForSelfService(UUID uuid) { return getDiscordId(uuid); }
+
+    @Override
+    public UUID getUuidForSelfService(String discordId) { return getUuid(discordId); }
+
+    @Override
+    public boolean unlinkIfMatches(String discordId, UUID expectedUuid) throws java.io.IOException {
+        if (!github.scarsz.discordsrv.account.ConditionalUnlink.file(linkedAccounts, discordId, expectedUuid,
+                () -> FileUtils.writeStringToFile(getFile(), "-" + discordId + " " + expectedUuid + "\n", "UTF-8", true))) return false;
+        try { beforeUnlink(expectedUuid, discordId); }
+        finally { afterUnlink(expectedUuid, discordId); }
+        return true;
+    }
+
+    @Override
     @SneakyThrows
     public void unlink(UUID uuid) {
         String discordId;
