@@ -63,9 +63,9 @@ public final class AccountUnlinkCommand implements CommandExecutor {
                     tell(player,"Unlink your Discord account? Linked-only roles or server access may be removed. Minecraft items and progress are not deleted. Confirm within 2 minutes.");
                     SchedulerUtil.runTaskForPlayer(plugin, player, () -> {
                         TextComponent confirm = new TextComponent("[Confirm unlink]");
-                        confirm.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/unlink confirm " + token));
+                        confirm.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/discordsrv:unlink confirm " + token));
                         TextComponent cancel = new TextComponent("  [Keep linked]");
-                        cancel.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/unlink cancel " + token));
+                        cancel.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,"/discordsrv:unlink cancel " + token));
                         player.spigot().sendMessage(confirm, cancel);
                     });
                 } else if (args.length == 2 && args[0].equalsIgnoreCase("confirm")) {
